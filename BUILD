@@ -18,8 +18,16 @@ cc_library(
 )
 
 cc_binary(
-  name = "main",
-  srcs = ["src/release/main.cpp"],
+  name = "solve_sa",
+  srcs = ["src/release/solve_sa.cpp"],
+  copts = ["-Wall", "-O3", "-Isrc"],
+  linkopts = ["-pthread", "-lm"],
+  deps = [":packing"],
+)
+
+cc_binary(
+  name = "tree_search",
+  srcs = ["src/release/tree_search.cpp"],
   copts = ["-Wall", "-O3", "-Isrc"],
   linkopts = ["-pthread", "-lm"],
   deps = [":packing"],
