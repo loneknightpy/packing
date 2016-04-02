@@ -25,7 +25,7 @@ cc_library(
     ]
   ),
   includes = ["src"],
-  copts = ["-Wall", "-O3"],
+  copts = ["-Wall", "-O3", "-std=c++0x"],
 )
 """
 
@@ -33,7 +33,7 @@ TEMPLATE = """
 cc_binary(
   name = "%s",
   srcs = ["%s"],
-  copts = ["-Wall", "-O3", "-Isrc"],
+  copts = ["-Wall", "-O3", "-Isrc", "-std=c++0x"],
   linkopts = ["-pthread", "-lm"],
   deps = [":packing"],
 )
