@@ -143,9 +143,9 @@ void PackingUtility::UpdateState(PackingState &state,
     }
     else if (spaceStack.size() != 0)
     {
-        for (int i = 1; i <= space.size; ++i)
-            spaceStack[spaceStack.size()-i].Swap(space.direction);
-        
+        //for (int i = 1; i <= space.size; ++i)
+        //    spaceStack[spaceStack.size()-i].Swap(space.direction);
+
 
 //         Space &top = spaceStack.back();
 

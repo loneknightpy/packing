@@ -13,7 +13,7 @@ using namespace std;
 
 void PackingUtility::Adapt(unordered_map<const Block *, double> &policy, PackingState &state, PackingState &best) {
   for (int i = state.plan.size(); i < best.plan.size(); ++i) {
-    policy[best.plan[i].block] *= 1.5;
+    policy[best.plan[i].block] *= 1.2;
   }
 }
 
