@@ -30,12 +30,12 @@ void PackingUtility::Rollout(unordered_map<const Block *, double> &policy, Packi
         double total = 0;
         vector<double> weight(blockListLen);
         for (int i = 0; i < blockListLen; ++i) {
-          PackingState tempState = state;
-          Space space;
-          UpdateState(tempState, blockList[i], space);
+          //PackingState tempState = state;
+          //Space space;
+          //UpdateState(tempState, blockList[i], space);
           //CompleteSolution(tempState);
-          //weight[i] = policy[blockList[i]] * blockList[i]->volume * blockList[i]->volume;
-          weight[i] = policy[blockList[i]] * tempState.volume * tempState.volume;
+          weight[i] = policy[blockList[i]] * blockList[i]->volume * blockList[i]->volume;
+          //weight[i] = policy[blockList[i]] * tempState.volume * tempState.volume;
           total += weight[i];
         }
 
@@ -119,14 +119,14 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
     for (int i = 0; i < blockTableLen; ++i)
       policy[blockTable[i]] = 1;
 
+    //PackingState state;
+    //InitState(state);
+    //best = MentoCarloSearch(level, iterations, policy, state);
+
     PackingState state;
     InitState(state);
-    best = MentoCarloSearch(level, iterations, policy, state);
 
-//    PackingState state;
-//    InitState(state);
-//
-//    while (!state.spaceStack.empty()) {
+    while (!state.spaceStack.empty()) {
 //      const int *avail = current.avail;
 //      int len = 0;
 //      for (int i = 0; i < blockTableLen; ++i)
@@ -182,18 +182,18 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
 //          }
 //      }
 //
-//      unordered_map<const Block *, double> policy;
-//      for (int i = 0; i < blockTableLen; ++i)
-//        policy[blockTable[i]] = 1;
-//
-//      PackingState next = MentoCarloSearch(level, iterations, policy, state);
-//      Placement placement = next.plan[state.plan.size()];
-//
-//      Space space;
-//      UpdateState(state, placement.block, space);
-//    }
-//
-//    best = state;
+      unordered_map<const Block *, double> policy;
+      for (int i = 0; i < blockTableLen; ++i)
+        policy[blockTable[i]] = 1;
+
+      PackingState next = MentoCarloSearch(level, iterations, policy, state);
+      //cerr << next.plan.size() << " " << state.plan.size() << endl;
+      Placement placement = next.plan[state.plan.size()];
+
+      Space space;
+      UpdateState(state, placement.block, space);
+    }
+    best = state;
 
     return best;
 }

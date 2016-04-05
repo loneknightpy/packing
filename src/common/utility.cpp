@@ -120,12 +120,12 @@ void PackingUtility::UpdateState(PackingState &state,
     space = spaceStack.back();
     spaceStack.pop_back();
 
-    if (block != NULL)
-    {
         Placement place;
         place.block = block;
         place.space = space;
         plan.push_back(place);
+    if (block != NULL)
+    {
         state.volume += block->volume;
 
         int *avail = state.avail;
@@ -145,6 +145,7 @@ void PackingUtility::UpdateState(PackingState &state,
     {
         for (int i = 1; i <= space.size; ++i)
             spaceStack[spaceStack.size()-i].Swap(space.direction);
+        
 
 //         Space &top = spaceStack.back();
 
