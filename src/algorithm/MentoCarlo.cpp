@@ -26,7 +26,7 @@ void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &polic
         Block *blockList[MaxBlockList];
         int blockListLen = 0;
 
-        GenBlockList(state, 256, blockList, blockListLen);
+        GenBlockList(state, 64, blockList, blockListLen);
 
         double total = 0;
         vector<double> weight(blockListLen);
@@ -141,7 +141,7 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
 
       while (!state.spaceStack.empty()) {
         for (int i = 0; i < blockTableLen; ++i) {
-          //policy[i].clear();
+          policy[i].clear();
         }
         PackingState next = MentoCarloSearch(level, iterations, policy, state);
         //cerr << next.plan.size() << " " << state.plan.size() << endl;
