@@ -13,7 +13,8 @@ using namespace std;
 
 void PackingUtility::Adapt(vector<unordered_map<const Block *, double>> &policy, PackingState &state, PackingState &best) {
   for (int i = state.plan.size(); i < best.plan.size(); ++i) {
-    policy[i][best.plan[i].block] *= 1.1;
+    if (policy[i][best.plan[i].block] < 100)
+      policy[i][best.plan[i].block] *= 1.05;
   }
 }
 
@@ -25,7 +26,7 @@ void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &polic
         Block *blockList[MaxBlockList];
         int blockListLen = 0;
 
-        GenBlockList(state, 16, blockList, blockListLen);
+        GenBlockList(state, 64, blockList, blockListLen);
 
         double total = 0;
         vector<double> weight(blockListLen);
