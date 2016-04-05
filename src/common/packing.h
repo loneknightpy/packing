@@ -190,7 +190,7 @@ struct PackingUtility
     PackingState SolveSA(double ts, double tf, double dt, int length, bool isLinear, int stage);
 
     void Rollout(std::unordered_map<const Block *, double> &policy, PackingState &state);
-    void Adapt(std::unordered_map<const Block *, double> &policy, PackingState &state);
+    void Adapt(std::unordered_map<const Block *, double> &policy, PackingState &state, PackingState &best);
     PackingState MentoCarloSearch(int level, int iterations, std::unordered_map<const Block *, double> &policy, PackingState &state);
     PackingState MentoCarlo(int level, int iterations, int stage);
 
