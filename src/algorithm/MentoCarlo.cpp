@@ -22,8 +22,6 @@ void PackingUtility::Adapt(unordered_map<const Block *, double> &policy, Packing
 
 void PackingUtility::Rollout(unordered_map<const Block *, double> &policy, PackingState &state)
 {
-    InitState(state);
-
     int k = 0;
     while (!state.spaceStack.empty())
     {
@@ -64,25 +62,23 @@ void PackingUtility::Rollout(unordered_map<const Block *, double> &policy, Packi
     }
 }
 
-void PackingUtility::MentoCarloSearch(
-    int level, int iterations, unordered_map<const Block *, double> &policy, PackingState &best)
+PackingState PackingUtility::MentoCarloSearch(
+    int level, int iterations, unordered_map<const Block *, double> &policy, PackingState &state)
 {
-  InitState(best);
+  PackingState best = state;
   Rollout(policy, best);
   
-  if (level == 0) {
-    Rollout(policy, best);
-  } else {
+  if (level > 0) {
     for (int i = 0; i < iterations; ++i) {
-      PackingState state;
       unordered_map<const Block *, double> newPolicy = policy;
-      MentoCarloSearch(level - 1, iterations, newPolicy, state);
-      if (state.volume > best.volume) {
-        best = state;
+      PackingState newStats = MentoCarloSearch(level - 1, iterations, newPolicy, state);
+      if (newStats.volume > best.volume) {
+        best = newStats;
         Adapt(policy, best);
       }
     }
   }
+  return best;
 }
 
 
@@ -126,7 +122,10 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
     unordered_map<const Block *, double> policy;
     for (int i = 0; i < blockTableLen; ++i)
       policy[blockTable[i]] = 1;
-    MentoCarloSearch(level, iterations, policy, best);
+    PackingState state;
+    InitState(state);
+
+    best = MentoCarloSearch(level, iterations, policy, state);
 
     return best;
 }

@@ -191,7 +191,7 @@ struct PackingUtility
 
     void Rollout(std::unordered_map<const Block *, double> &policy, PackingState &state);
     void Adapt(std::unordered_map<const Block *, double> &policy, PackingState &state);
-    void MentoCarloSearch(int level, int iterations, std::unordered_map<const Block *, double> &policy, PackingState &state);
+    PackingState MentoCarloSearch(int level, int iterations, std::unordered_map<const Block *, double> &policy, PackingState &state);
     PackingState MentoCarlo(int level, int iterations, int stage);
 
     // Check if two boxes are consistent.
