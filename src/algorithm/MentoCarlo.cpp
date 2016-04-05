@@ -127,8 +127,10 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
     //PackingState state;
     //InitState(state);
     //best = MentoCarloSearch(level, iterations, policy, state);
+    int numAttempt = 1;
+    int numRun = 25;
     InitState(best);
-    for (int attempt = 0; attempt < 5; ++attempt) { 
+    for (int attempt = 0; attempt < numAttempt; ++attempt) { 
       PackingState state;
       InitState(state);
 
@@ -140,12 +142,19 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
         }
 
       while (!state.spaceStack.empty()) {
-        for (int i = 0; i < blockTableLen; ++i) {
-          policy[i].clear();
+        PackingState bestNext;
+        InitState(bestNext);
+        for (int run = 0; run < numRun; ++run) {
+          for (int i = 0; i < blockTableLen; ++i) {
+            policy[i].clear();
+          }
+          PackingState next = MentoCarloSearch(level, iterations, policy, state);
+          if (next.volume > bestNext.volume) {
+            bestNext = next;
+          }
         }
-        PackingState next = MentoCarloSearch(level, iterations, policy, state);
         //cerr << next.plan.size() << " " << state.plan.size() << endl;
-        Placement placement = next.plan[state.plan.size()];
+        Placement placement = bestNext.plan[state.plan.size()];
 
         Space space;
         UpdateState(state, placement.block, space);
