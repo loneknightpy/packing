@@ -29,7 +29,7 @@ tree_thread(void *p)
     //params->utility.TreeSearch(params - thread_params);
     //params->utility.SolveSA(1.0, 0.02, 0.20, 200, false, params - thread_params);
     //params->utility.MentoCarlo(1, 1000, params - thread_params);
-    params->utility.MentoCarlo(1, 1000, 1);
+    params->utility.MentoCarlo(1, 1000, params - thread_params);
     return p;
 }
 

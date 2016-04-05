@@ -26,16 +26,20 @@ void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &polic
         Block *blockList[MaxBlockList];
         int blockListLen = 0;
 
-        GenBlockList(state, 64, blockList, blockListLen);
+        GenBlockList(state, 256, blockList, blockListLen);
 
         double total = 0;
         vector<double> weight(blockListLen);
+        unordered_map<const Block *, double> &current_policy = policy[state.plan.size()];
         for (int i = 0; i < blockListLen; ++i) {
           //PackingState tempState = state;
           //Space space;
           //UpdateState(tempState, blockList[i], space);
           //CompleteSolution(tempState);
-          weight[i] = policy[state.plan.size()][blockList[i]] * blockList[i]->volume * blockList[i]->volume;
+          if (current_policy.find(blockList[i]) == current_policy.end()) {
+            current_policy[blockList[i]] = 1;
+          }
+          weight[i] = current_policy[blockList[i]] * blockList[i]->volume * blockList[i]->volume;
           //weight[i] = policy[blockList[i]] * tempState.volume * tempState.volume;
           total += weight[i];
         }
@@ -123,84 +127,33 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
     //PackingState state;
     //InitState(state);
     //best = MentoCarloSearch(level, iterations, policy, state);
+    InitState(best);
+    for (int attempt = 0; attempt < 5; ++attempt) { 
+      PackingState state;
+      InitState(state);
 
-    PackingState state;
-    InitState(state);
+       vector<unordered_map<const Block *, double>> policy(blockTableLen);
+        for (int i = 0; i < blockTableLen; ++i) {
+          for (int j = 0; j < blockTableLen; ++j) {
+              policy[i][blockTable[j]] = 1;
+          }      
+        }
 
-     vector<unordered_map<const Block *, double>> policy(blockTableLen);
-      for (int i = 0; i < blockTableLen; ++i) {
-        for (int j = 0; j < blockTableLen; ++j) {
-            policy[i][blockTable[j]] = 1;
-        }      
+      while (!state.spaceStack.empty()) {
+        for (int i = 0; i < blockTableLen; ++i) {
+          //policy[i].clear();
+        }
+        PackingState next = MentoCarloSearch(level, iterations, policy, state);
+        //cerr << next.plan.size() << " " << state.plan.size() << endl;
+        Placement placement = next.plan[state.plan.size()];
+
+        Space space;
+        UpdateState(state, placement.block, space);
       }
 
-    while (!state.spaceStack.empty()) {
-//      const int *avail = current.avail;
-//      int len = 0;
-//      for (int i = 0; i < blockTableLen; ++i)
-//      {
-//          Block *block = blockTable[i];
-//          if ((stage == 1 || block->type == SimpleBlock))
-//          {
-//              const int *require = block->require;
-//              const int *boxIndex = block->boxIndex;
-//              int boxLen = block->boxLen;
-//
-//              bool flag = true;
-//              for (int j = 0; j < boxLen; ++j)
-//              {
-//                  const int &k = boxIndex[j];
-//                  if (require[k] > avail[k])
-//                  {
-//                      flag = false;
-//                      break;
-//                  }
-//              }
-//
-//              if (flag)
-//                  blockTable[len++] = block;
-//          }
-//      }
-//      blockTableLen = len;
-//
-//      fill_n(&dict[0][0], MaxLength*MaxLength, MaxNum);
-//
-//      len = 0;
-//      for (int i = 0; i < boxListLen; ++i)
-//      {
-//          Box *box = boxList[i];
-//          if (avail[box->type])
-//          {
-//              boxList[len++] = box;
-//              if (box->lx < dict[box->ly][box->lz])
-//                  dict[box->ly][box->lz] = box->lx;
-//          }
-//      }
-//      boxListLen = len;
-//
-//      for (int i = 0; i < MaxLength; ++i)
-//      {
-//          for (int j = 0; j < MaxLength; ++j)
-//          {
-//              int &x = dict[i][j];
-//              if (i > 0 && dict[i-1][j] < x)
-//                  x = dict[i-1][j];
-//              if (j > 0 && dict[i][j-1] < x)
-//                  x = dict[i][j-1];
-//          }
-//      }
-//
- 
-//      cerr << state.plan.size() << endl;
-
-      PackingState next = MentoCarloSearch(level, iterations, policy, state);
-      //cerr << next.plan.size() << " " << state.plan.size() << endl;
-      Placement placement = next.plan[state.plan.size()];
-
-      Space space;
-      UpdateState(state, placement.block, space);
+      if (state.volume > best.volume) 
+        best = state;
     }
-    best = state;
 
     GenSolution(best, solution);
 

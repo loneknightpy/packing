@@ -1,5 +1,5 @@
 mkdir -p output/packing
-bazel-bin/mento_carlo < data/thpack0.txt > output/packing/output0
+#bazel-bin/mento_carlo < data/thpack0.txt > output/packing/output0
 bazel-bin/mento_carlo < data/thpack1.txt > output/packing/output1
 bazel-bin/mento_carlo < data/thpack2.txt > output/packing/output2
 bazel-bin/mento_carlo < data/thpack3.txt > output/packing/output3
