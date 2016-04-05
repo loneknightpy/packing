@@ -67,8 +67,8 @@ PackingState PackingUtility::MentoCarloSearch(
   
   if (level > 0) {
     for (int i = 0; i < iterations; ++i) {
-      unordered_map<const Block *, double> newPolicy = policy;
-      PackingState newState = MentoCarloSearch(level - 1, iterations, newPolicy, state);
+      //unordered_map<const Block *, double> newPolicy = policy;
+      PackingState newState = MentoCarloSearch(level - 1, iterations, policy, state);
       if (newState.volume > best.volume) {
         best = newState;
         Adapt(policy, state, best);
@@ -194,6 +194,8 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
       UpdateState(state, placement.block, space);
     }
     best = state;
+    
+    GenSolution(best, solution);
 
     return best;
 }

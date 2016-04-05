@@ -13,7 +13,17 @@ void PackingUtility::GenBlockList(PackingState &state,
                                   int noBranch, Block *blockList[], int &blockListLen)
 {
     blockListLen = 0;
-    Space &space = state.spaceStack.back();
+    //Space &space = state.spaceStack.back();
+
+    //int biggest = 0;
+    //for (int i = 1; i < state.spaceStack.size(); ++i) {
+    //    if (state.spaceStack[i].volume() > state.spaceStack[biggest].volume()) 
+    //        biggest = i;
+    //}
+
+    //swap(state.spaceStack[biggest], state.spaceStack.front());
+    Space &space = state.spaceStack.front();
+   
     int lx = space.lx;
     int ly = space.ly;
     int lz = space.lz;
@@ -95,7 +105,7 @@ void PackingUtility::InitState(PackingState &state)
     state.plan.resize(0);
     state.plan.reserve(MaxPlan);
     state.spaceStack.resize(0);
-    state.spaceStack.reserve(MaxPlan);
+    //state.spaceStack.reserve(MaxPlan);
 
     Space space;
     space.x = space.y = space.z = 0;
@@ -115,10 +125,12 @@ void PackingUtility::UpdateState(PackingState &state,
                                  const Block *block, Space &space)
 {
     vector<Placement> &plan = state.plan;
-    vector<Space> &spaceStack = state.spaceStack;
+    deque<Space> &spaceStack = state.spaceStack;
 
-    space = spaceStack.back();
-    spaceStack.pop_back();
+    //space = spaceStack.back();
+    //spaceStack.pop_back();
+    space = spaceStack.front();
+    spaceStack.pop_front();
 
         Placement place;
         place.block = block;
@@ -175,7 +187,7 @@ void PackingUtility::UpdateState(PackingState &state,
 void PackingUtility::RestoreState(PackingState &state, const Block *block, const Space &space)
 {
     vector<Placement> &plan = state.plan;
-    vector<Space> &spaceStack = state.spaceStack;
+    deque<Space> &spaceStack = state.spaceStack;
 
     if (block != NULL)
     {
@@ -219,7 +231,7 @@ void PackingUtility::RestoreState(PackingState &state, const Block *block, const
 
 void PackingUtility::GenResidue(PackingState &state, const Block *block, const Space &space)
 {
-    vector<Space> &spaceStack = state.spaceStack;
+    deque<Space> &spaceStack = state.spaceStack;
 
     // Initialize x1, y1, z1 to the start position of block and space.
     int	x1 = space.x;
@@ -598,7 +610,7 @@ void PackingUtility::ExtendSolution(PackingState &state, int maxAdd, int add, in
 
 void PackingUtility::CompleteSolution(PackingState &state)
 {
-    vector<Space> &spaceStack = state.spaceStack;
+    deque<Space> &spaceStack = state.spaceStack;
     Space space;
     Block *blockList[MaxBlockList];
     int blockListLen = 0;

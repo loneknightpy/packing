@@ -5,6 +5,7 @@
 #include <set>
 #include <unordered_map>
 #include <vector>
+#include <deque>
 
 #include "problem.h"
 
@@ -40,7 +41,7 @@ struct Placement
 struct PackingState 
 {
     std::vector<Placement> plan;
-    std::vector<Space> spaceStack;
+    std::deque<Space> spaceStack;
     int avail[MaxBox];
     int volume;
     int volumeCompelete;

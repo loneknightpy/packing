@@ -54,6 +54,10 @@ struct Space
         else if (type == DirectionZ)
             std::swap(lz, pz);
     }
+
+    int volume() {
+        return lx * ly * lz;
+    }
 };
 
 // A packing block contain the same type box.
