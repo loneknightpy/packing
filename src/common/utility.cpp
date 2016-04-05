@@ -9,6 +9,10 @@
 
 using namespace std;
 
+bool compareSpace(const Space &a, const Space &b) {
+    return a.volume() > b.volume();
+}
+
 void PackingUtility::GenBlockList(PackingState &state,
                                   int noBranch, Block *blockList[], int &blockListLen)
 {
@@ -127,6 +131,7 @@ void PackingUtility::UpdateState(PackingState &state,
     vector<Placement> &plan = state.plan;
     deque<Space> &spaceStack = state.spaceStack;
 
+
     //space = spaceStack.back();
     //spaceStack.pop_back();
     space = spaceStack.front();
@@ -182,6 +187,8 @@ void PackingUtility::UpdateState(PackingState &state,
 //             top.ly += space.ly;
 //         }
     }
+    
+    sort(spaceStack.begin(), spaceStack.end(), compareSpace);
 }
 
 void PackingUtility::RestoreState(PackingState &state, const Block *block, const Space &space)

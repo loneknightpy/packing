@@ -55,7 +55,7 @@ struct Space
             std::swap(lz, pz);
     }
 
-    int volume() {
+    int volume() const {
         return lx * ly * lz;
     }
 };
