@@ -13,7 +13,7 @@ using namespace std;
 
 void PackingUtility::Adapt(vector<unordered_map<const Block *, double>> &policy, PackingState &state, PackingState &best) {
   for (int i = state.plan.size(); i < best.plan.size(); ++i) {
-    policy[i][best.plan[i].block] *= 1.2;
+    policy[i][best.plan[i].block] *= 1.1;
   }
 }
 
@@ -25,7 +25,7 @@ void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &polic
         Block *blockList[MaxBlockList];
         int blockListLen = 0;
 
-        GenBlockList(state, 32, blockList, blockListLen);
+        GenBlockList(state, 16, blockList, blockListLen);
 
         double total = 0;
         vector<double> weight(blockListLen);
@@ -115,9 +115,9 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
         }
     }
 
-    unordered_map<const Block *, double> policy;
-    for (int i = 0; i < blockTableLen; ++i)
-      policy[blockTable[i]] = 1;
+    //unordered_map<const Block *, double> policy;
+    //for (int i = 0; i < blockTableLen; ++i)
+    //  policy[blockTable[i]] = 1;
 
     //PackingState state;
     //InitState(state);
@@ -125,6 +125,13 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
 
     PackingState state;
     InitState(state);
+
+     vector<unordered_map<const Block *, double>> policy(blockTableLen);
+      for (int i = 0; i < blockTableLen; ++i) {
+        for (int j = 0; j < blockTableLen; ++j) {
+            policy[i][blockTable[j]] = 1;
+        }      
+      }
 
     while (!state.spaceStack.empty()) {
 //      const int *avail = current.avail;
@@ -182,12 +189,7 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
 //          }
 //      }
 //
-      vector<unordered_map<const Block *, double>> policy(blockTableLen);
-      for (int i = 0; i < blockTableLen; ++i) {
-        for (int j = 0; j < blockTableLen; ++j) {
-            policy[i][blockTable[j]] = 1;
-        }      
-      }
+ 
 //      cerr << state.plan.size() << endl;
 
       PackingState next = MentoCarloSearch(level, iterations, policy, state);
