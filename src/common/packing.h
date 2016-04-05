@@ -189,8 +189,9 @@ struct PackingUtility
     void Heuristic(PackingSequence &ps, PackingState &state);
     PackingState SolveSA(double ts, double tf, double dt, int length, bool isLinear, int stage);
 
-    void Rollout(std::unordered_map<Block *, double> &policy, PackingState &state);
-    void MentoCarloSearch(int level, int iterations, std::unordered_map<Block *, double> &policy, PackingState &state);
+    void Rollout(std::unordered_map<const Block *, double> &policy, PackingState &state);
+    void Adapt(std::unordered_map<const Block *, double> &policy, PackingState &state);
+    void MentoCarloSearch(int level, int iterations, std::unordered_map<const Block *, double> &policy, PackingState &state);
     PackingState MentoCarlo(int level, int iterations, int stage);
 
     // Check if two boxes are consistent.
