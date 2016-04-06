@@ -187,8 +187,8 @@ void PackingUtility::UpdateState(PackingState &state,
 //             top.ly += space.ly;
 //         }
     }
-    
-    sort(spaceStack.begin(), spaceStack.end(), compareSpace);
+
+    //sort(spaceStack.begin(), spaceStack.end(), compareSpace);
 }
 
 void PackingUtility::RestoreState(PackingState &state, const Block *block, const Space &space)
