@@ -13,8 +13,8 @@ using namespace std;
 
 void PackingUtility::Adapt(vector<unordered_map<const Block *, double>> &policy, PackingState &state, PackingState &best) {
   for (int i = state.plan.size(); i < best.plan.size(); ++i) {
-    if (policy[i][best.plan[i].block] < 100)
-      policy[i][best.plan[i].block] *= 1.05;
+    if (policy[0][best.plan[i].block] < 100)
+      policy[0][best.plan[i].block] *= 1.05;
   }
 }
 
@@ -31,7 +31,7 @@ void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &polic
 
         double total = 0;
         vector<double> weight(blockListLen);
-        unordered_map<const Block *, double> &current_policy = policy[state.plan.size()];
+        unordered_map<const Block *, double> &current_policy = policy[0];
         for (int i = 0; i < blockListLen; ++i) {
           //PackingState tempState = state;
           //Space space;
@@ -158,9 +158,12 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
         if (blockListLen > 0) {
           PackingState bestNext;
           InitState(bestNext);
+          for (int i = 0; i < blockTableLen; ++i) {
+              //policy[i].clear();
+            }
           for (int run = 0; run < numRun; ++run) {
             for (int i = 0; i < blockTableLen; ++i) {
-              policy[i].clear();
+              //policy[i].clear();
             }
             PackingState next = MentoCarloSearch(level, iterations, policy, state);
             if (next.volume > bestNext.volume) {
