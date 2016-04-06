@@ -20,13 +20,14 @@ void PackingUtility::Adapt(vector<unordered_map<const Block *, double>> &policy,
 
 void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &policy, PackingState &state)
 {
+    int numBlocks = 256;
     int k = 0;
     while (!state.spaceStack.empty())
     {
         Block *blockList[MaxBlockList];
         int blockListLen = 0;
 
-        GenBlockList(state, 64, blockList, blockListLen);
+        GenBlockList(state, numBlocks, blockList, blockListLen);
 
         double total = 0;
         vector<double> weight(blockListLen);
@@ -61,6 +62,7 @@ void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &polic
           UpdateState(state, blockList[selected], space);
           ++k;
         }
+        numBlocks = max(numBlocks/2, 2);
     }
 }
 
@@ -76,14 +78,15 @@ PackingState PackingUtility::MentoCarloSearch(
       //unordered_map<const Block *, double> newPolicy = policy;
       PackingState newState = MentoCarloSearch(level - 1, iterations, policy, state);
       if (newState.volume > best.volume) {
+        iterations = max(iterations, i + 1000);
         ++count;
         best = newState;
         Adapt(policy, state, best);
       }
     }
 
-//    if (count > 0)
-//      cerr << "update " << state.plan.size() << " " << count << endl;
+    //if (count > 0)
+      //cerr << "update " << state.plan.size() << " " << count << endl;
   }
   return best;
 }
