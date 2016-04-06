@@ -70,15 +70,20 @@ PackingState PackingUtility::MentoCarloSearch(
   PackingState best = state;
   Rollout(policy, best);
   
+  int count = 0;
   if (level > 0) {
     for (int i = 0; i < iterations; ++i) {
       //unordered_map<const Block *, double> newPolicy = policy;
       PackingState newState = MentoCarloSearch(level - 1, iterations, policy, state);
       if (newState.volume > best.volume) {
+        ++count;
         best = newState;
         Adapt(policy, state, best);
       }
     }
+
+//    if (count > 0)
+//      cerr << "update " << state.plan.size() << " " << count << endl;
   }
   return best;
 }
@@ -142,22 +147,33 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
         }
 
       while (!state.spaceStack.empty()) {
-        PackingState bestNext;
-        InitState(bestNext);
-        for (int run = 0; run < numRun; ++run) {
-          for (int i = 0; i < blockTableLen; ++i) {
-            policy[i].clear();
-          }
-          PackingState next = MentoCarloSearch(level, iterations, policy, state);
-          if (next.volume > bestNext.volume) {
-            bestNext = next;
-          }
-        }
-        //cerr << next.plan.size() << " " << state.plan.size() << endl;
-        Placement placement = bestNext.plan[state.plan.size()];
+        Block *blockList[MaxBlockList];
+        int blockListLen = 0;
 
-        Space space;
-        UpdateState(state, placement.block, space);
+        GenBlockList(state, 64, blockList, blockListLen);
+
+        if (blockListLen > 0) {
+          PackingState bestNext;
+          InitState(bestNext);
+          for (int run = 0; run < numRun; ++run) {
+            for (int i = 0; i < blockTableLen; ++i) {
+              policy[i].clear();
+            }
+            PackingState next = MentoCarloSearch(level, iterations, policy, state);
+            if (next.volume > bestNext.volume) {
+              bestNext = next;
+            }
+          }
+          //cerr << next.plan.size() << " " << state.plan.size() << endl;
+          Placement placement = bestNext.plan[state.plan.size()];
+
+          Space space;
+          UpdateState(state, placement.block, space);
+        }
+        else {
+          Space space;
+          UpdateState(state, NULL, space);
+        }
       }
 
       if (state.volume > best.volume) 
