@@ -32,14 +32,12 @@ const int HeapSize = 6;
 
 extern int reachEffort;
 
-struct Placement
-{
+struct Placement {
     const Block *block;
     Space space;
 };
 
-struct PackingState 
-{
+struct PackingState {
     std::vector<Placement> plan;
     std::deque<Space> spaceStack;
     int avail[MaxBox];
@@ -47,8 +45,7 @@ struct PackingState
     int volumeCompelete;
     unsigned long long code;
 
-    static bool Compare(const PackingState *s1, const PackingState *s2)
-    {
+    static bool Compare(const PackingState *s1, const PackingState *s2) {
         if (s1->volumeCompelete != s2->volumeCompelete)
             return s1->volumeCompelete > s2->volumeCompelete;
         else
@@ -56,51 +53,45 @@ struct PackingState
     }
 };
 
-struct PartialPackingState
-{
+struct PartialPackingState {
     Block *blocks[MaxDepth];
     int len;
     int volumeCompelete;
     unsigned long long code;
 };
 
-struct PackingSequence
-{
+struct PackingSequence {
     int index[MaxPlan];
     int len;
     int volume;
 };
 
-struct PackingSolution
-{
+struct PackingSolution {
     int len;
     Box positions[BufferSize];
 };
 
-struct PhaseUnit
-{
+struct PhaseUnit {
     std::vector<std::vector<PackingState *> > heaps;
     const Block *block;
     int effort;
     int bestVolume;
     int depth;
 
-    static bool Compare(const PhaseUnit *p1, const PhaseUnit *p2)
-    {
+    static bool Compare(const PhaseUnit *p1, const PhaseUnit *p2) {
         return p1->bestVolume > p2->bestVolume;
     }
 };
 
-struct PackingUtility 
-{
+struct PackingUtility {
     const PackingProblem *problem;
 
     int totalAdd;
     int searchEffort;
-    int branches[MaxPhaseDepth+1][MaxEffort+1];
+    int branches[MaxPhaseDepth + 1][MaxEffort + 1];
     int dict[MaxLength][MaxLength];
 
-    Block *blockTable[2*MaxBlockTable];
+    Block *blockTable[2 * MaxBlockTable];
     int blockTableLen;
 
     Box *boxList[BufferSize];
@@ -125,23 +116,20 @@ struct PackingUtility
     PackingSolution solution;
     double costTime;
 
-    PackingUtility(const PackingProblem *problem = NULL) 
-    { 
-        SetPackingProblem(problem); 
+    PackingUtility(const PackingProblem *problem = NULL) {
+        SetPackingProblem(problem);
         phaseHeaps.resize(MaxDepth);
 
         packingStateStackLen = 0;
         for (int i = 0; i < MaxPackingStatePoolSize; ++i)
             packingStateStack[packingStateStackLen++] = &packingStatePool[i];
 
-        for (int i = 0; i <= MaxPhaseDepth; ++i)
-        {
+        for (int i = 0; i <= MaxPhaseDepth; ++i) {
             int branch = 0;
-            for (int j = 0; j <= MaxEffort; ++j)
-            {
+            for (int j = 0; j <= MaxEffort; ++j) {
                 int product = 1;
                 for (int k = 0; k < i; ++k)
-                    product *= branch+1;
+                    product *= branch + 1;
                 if (product <= j)
                     ++branch;
                 branches[i][j] = branch;
@@ -152,59 +140,81 @@ struct PackingUtility
     }
 
     void SetPackingProblem(const PackingProblem *problem) { this->problem = problem; }
+
     const PackingProblem *GetPackingProblem() const { return this->problem; }
 
-    void GenBlockList(PackingState &state, int noBranch, 
-        Block *block[], int &blockListLen);
+    void GenBlockList(PackingState &state, int noBranch,
+                      Block *block[], int &blockListLen);
 
     void InitState(PackingState &state);
+
     void UpdateState(PackingState &state, const Block *block, Space &space);
+
     void RestoreState(PackingState &state, const Block *block, const Space &space);
+
     void GenResidue(PackingState &state, const Block *block, const Space &space);
 
     void ExtendSolution(PackingState &state, int maxAdd, int add, int noBranch);
+
     void CompleteSolution(PackingState &state);
 
     void SplitPartialState(PackingState &state, int index, PartialPackingState &partial);
+
     void MergePartialState(PackingState &state, PartialPackingState &partial);
 
     void GenSolution(PackingState &state, PackingSolution &solution);
-    void ApplyBlock(int x, int y, int z, const Block *block, 
-        PackingSolution *solution);
+
+    void ApplyBlock(int x, int y, int z, const Block *block,
+                    PackingSolution *solution);
 
     PackingState *NewPackingState();
+
     void FreePackingState(PackingState *state);
+
     void PushPackingState(int depth, PackingState &state);
 
     void InitPhaseUnit(PhaseUnit &phase, PackingState &state, Block *block, int effort);
+
     void PhaseSearch(PhaseUnit &phase);
+
     int MultiPhaseSearch(PackingState &state, Block *block, int adds, int effort);
 
     const Block *FindNextBlock(PackingState &state);
 
     void UpdateBlockTable();
+
     void UpdateBoxList();
 
     PackingState TreeSearch(int stage);
 
     void Heuristic(PackingSequence &ps, PackingState &state);
+
     PackingState SolveSA(double ts, double tf, double dt, int length, bool isLinear, int stage);
 
     void Rollout(std::vector<std::unordered_map<const Block *, double>> &policy, PackingState &state);
+
     void Adapt(std::vector<std::unordered_map<const Block *, double>> &policy, PackingState &state, PackingState &best);
-    PackingState MentoCarloSearch(int level, int iterations, std::vector<std::unordered_map<const Block *, double>> &policy, PackingState &state);
+
+    PackingState MentoCarloSearch(int level, int iterations,
+                                  std::vector<std::unordered_map<const Block *, double>> &policy, PackingState &state);
+
     PackingState MentoCarlo(int level, int iterations, int stage);
 
     // Check if two boxes are consistent.
     bool Check(const Box &b1, const Box &b2);
+
     // Check if a solution is consistent.
     bool Check(const Box *p, int n);
+
     // Check if a space is available for the specific box.
     bool Check(const Box &b, const Space &s);
+
     // Check if a space is available for some box.
-	bool Check(const Space &s) {return true;}
+    bool Check(const Space &s) { return true; }
+
     // Check if two spaceListAux are consistent.
     bool Check(const Space &s1, const Space &s2);
+
     // Check if a few spaceListAux are consistent.
     bool Check(Space *spaceList[BufferSize], int len);
 };

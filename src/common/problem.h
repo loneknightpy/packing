@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-#define STABLE				0
+#define STABLE                0
 
 const int BufferSize = 10000;
 const int MaxBox = 100;
@@ -15,19 +15,21 @@ const int MaxRound = 5;
 const double MinFillRate = 0.98;
 const double MinAreaRate = 0.96;
 
-enum DirectionType { DirectionX = 1, DirectionY = 2, DirectionZ = 4, };
-enum BlockType { SimpleBlock, CombineBlockX, CombineBlockY, CombineBlockZ};
+enum DirectionType {
+    DirectionX = 1, DirectionY = 2, DirectionZ = 4,
+};
+enum BlockType {
+    SimpleBlock, CombineBlockX, CombineBlockY, CombineBlockZ
+};
 
 // Box structure, one box type may have at most six box structure, one for each direction.
-struct Box
-{
+struct Box {
     int x, y, z;
     int lx, ly, lz;
     int type;
     int volume;
 
-    static bool Compare(const Box *b1, const Box *b2)
-    {
+    static bool Compare(const Box *b1, const Box *b2) {
         if (b1->volume != b2->volume)
             return b1->volume > b2->volume;
         return b1->type < b2->type;
@@ -35,8 +37,7 @@ struct Box
 };
 
 // Space remain for packing.
-struct Space
-{
+struct Space {
     int x, y, z;
     int lx, ly, lz;
     //bool isMax;
@@ -45,8 +46,7 @@ struct Space
     int size;
     int px, py, pz;
 
-    void Swap(DirectionType type)
-    {
+    void Swap(DirectionType type) {
         if (type == DirectionX)
             std::swap(lx, px);
         else if (type == DirectionY)
@@ -61,8 +61,7 @@ struct Space
 };
 
 // A packing block contain the same type box.
-struct Block
-{
+struct Block {
     int type;
     int ax, ay;
     int lx, ly, lz;
@@ -82,12 +81,13 @@ struct Block
 
     // Compare function for blocks.
     static bool Compare(const Block *b1, const Block *b2);
+
     static bool Equal(const Block *b1, const Block *b2);
+
     static bool IsContain(const Block *block, const Box *box);
 };
 
-struct PackingProblem
-{
+struct PackingProblem {
     // The number of boxes.
     int n;
     // The number of boxes, considers different direction as different types.
@@ -111,7 +111,9 @@ struct PackingProblem
     ~PackingProblem() { ClearBlocks(); }
 
     bool Input(FILE *fin);
+
     void GenBlocks();
+
     void ClearBlocks();
 };
 

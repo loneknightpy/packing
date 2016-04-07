@@ -11,110 +11,105 @@
 using namespace std;
 
 struct CompareBlock {
-   unordered_map<const Block *, double> &_weight;
+    unordered_map<const Block *, double> &_weight;
 
 
-  CompareBlock( unordered_map<const Block *, double> &weight): _weight(weight) {
-    //cerr << _weight.size() << endl;
-  }
+    CompareBlock(unordered_map<const Block *, double> &weight) : _weight(weight) {
+        //cerr << _weight.size() << endl;
+    }
 
-  bool operator () (const Block *a, const Block *b)  {
-    return _weight[a] > _weight[b];
-  }
+    bool operator()(const Block *a, const Block *b) {
+        return _weight[a] > _weight[b];
+    }
 };
 
-void PackingUtility::Adapt(vector<unordered_map<const Block *, double>> &policy, PackingState &state, PackingState &best) {
-  for (int i = state.plan.size(); i < best.plan.size(); ++i) {
-    if (policy[0][best.plan[i].block] < 100)
-      policy[0][best.plan[i].block] *= 1.05;
-  }
+void PackingUtility::Adapt(vector<unordered_map<const Block *, double>> &policy, PackingState &state,
+                           PackingState &best) {
+    for (int i = state.plan.size(); i < best.plan.size(); ++i) {
+        if (policy[0][best.plan[i].block] < 100)
+            policy[0][best.plan[i].block] *= 1.05;
+    }
 }
 
-void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &policy, PackingState &state)
-{
+void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &policy, PackingState &state) {
     int numBlocks = 256;
     int k = 0;
-    while (!state.spaceStack.empty())
-    {
+    while (!state.spaceStack.empty()) {
         Block *blockList[MaxBlockList];
         int blockListLen = 0;
 
         GenBlockList(state, MaxBlockList, blockList, blockListLen);
 
-      
+
         double total = 0;
         //vector<double> weight(blockListLen);
         unordered_map<const Block *, double> &current_policy = policy[0];
         unordered_map<const Block *, double> weight;
         for (int i = 0; i < blockListLen; ++i) {
-          //PackingState tempState = state;
-          //Space space;
-          //UpdateState(tempState, blockList[i], space);
-          //CompleteSolution(tempState);
-          if (current_policy.find(blockList[i]) == current_policy.end()) {
-            current_policy[blockList[i]] = 1;
-          }
-          weight[blockList[i]] = current_policy[blockList[i]] * blockList[i]->volume * blockList[i]->volume;
-          //weight[i] = policy[blockList[i]] * tempState.volume * tempState.volume;
-          //total += weight[blockList[i]];
+            //PackingState tempState = state;
+            //Space space;
+            //UpdateState(tempState, blockList[i], space);
+            //CompleteSolution(tempState);
+            if (current_policy.find(blockList[i]) == current_policy.end()) {
+                current_policy[blockList[i]] = 1;
+            }
+            weight[blockList[i]] = current_policy[blockList[i]] * blockList[i]->volume * blockList[i]->volume;
+            //weight[i] = policy[blockList[i]] * tempState.volume * tempState.volume;
+            //total += weight[blockList[i]];
         }
 
 
         sort(blockList, blockList + blockListLen, CompareBlock(weight));
         blockListLen = min(blockListLen, numBlocks);
         for (int i = 0; i < blockListLen; ++i) {
-          total += weight[blockList[i]];
+            total += weight[blockList[i]];
         }
 
         Space space;
-        if (blockListLen == 0)
-        {
+        if (blockListLen == 0) {
             UpdateState(state, NULL, space);
         }
-        else
-        {
-          double p = 1.0 * rand() / RAND_MAX * total;
-          int selected = 0;
-          double sum = 0;
-          while (selected < blockListLen-1 && sum + weight[blockList[selected]] < p) {
-            sum += weight[blockList[selected++]];
-          }
+        else {
+            double p = 1.0 * rand() / RAND_MAX * total;
+            int selected = 0;
+            double sum = 0;
+            while (selected < blockListLen - 1 && sum + weight[blockList[selected]] < p) {
+                sum += weight[blockList[selected++]];
+            }
 
-          UpdateState(state, blockList[selected], space);
-          ++k;
+            UpdateState(state, blockList[selected], space);
+            ++k;
         }
-        numBlocks = max(numBlocks/2, 2);
+        numBlocks = max(numBlocks / 2, 2);
     }
 }
 
 PackingState PackingUtility::MentoCarloSearch(
-    int level, int iterations, vector<unordered_map<const Block *, double>> &policy, PackingState &state)
-{
-  PackingState best = state;
-  Rollout(policy, best);
-  
-  int count = 0;
-  if (level > 0) {
-    for (int i = 0; i < iterations; ++i) {
-      //unordered_map<const Block *, double> newPolicy = policy;
-      PackingState newState = MentoCarloSearch(level - 1, iterations, policy, state);
-      if (newState.volume > best.volume) {
-        iterations = max(iterations, i + 1000);
-        ++count;
-        best = newState;
-        Adapt(policy, state, best);
-      }
-    }
+        int level, int iterations, vector<unordered_map<const Block *, double>> &policy, PackingState &state) {
+    PackingState best = state;
+    Rollout(policy, best);
 
-    //if (count > 0)
-      //cerr << "update " << state.plan.size() << " " << count << endl;
-  }
-  return best;
+    int count = 0;
+    if (level > 0) {
+        for (int i = 0; i < iterations; ++i) {
+            //unordered_map<const Block *, double> newPolicy = policy;
+            PackingState newState = MentoCarloSearch(level - 1, iterations, policy, state);
+            if (newState.volume > best.volume) {
+                iterations = max(iterations, i + 1000);
+                ++count;
+                best = newState;
+                Adapt(policy, state, best);
+            }
+        }
+
+        //if (count > 0)
+        //cerr << "update " << state.plan.size() << " " << count << endl;
+    }
+    return best;
 }
 
 
-PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
-{
+PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage) {
     copy(problem->blockTable.begin(), problem->blockTable.end(), blockTable);
     blockTableLen = problem->blockTable.size();
 
@@ -122,30 +117,26 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
     boxListLen = problem->boxListLen;
 
     int len = 0;
-    for (int i = 0; i < blockTableLen; ++i)
-    {
+    for (int i = 0; i < blockTableLen; ++i) {
         Block *block = blockTable[i];
         if ((stage == 1 || block->type == SimpleBlock))
-                blockTable[len++] = block;
+            blockTable[len++] = block;
     }
     blockTableLen = len;
-    fill_n(&dict[0][0], MaxLength*MaxLength, MaxNum);
-    for (int i = 0; i < boxListLen; ++i)
-    {
+    fill_n(&dict[0][0], MaxLength * MaxLength, MaxNum);
+    for (int i = 0; i < boxListLen; ++i) {
         Box *box = boxList[i];
         if (box->lx < dict[box->ly][box->lz])
             dict[box->ly][box->lz] = box->lx;
     }
 
-    for (int i = 0; i < MaxLength; ++i)
-    {
-        for (int j = 0; j < MaxLength; ++j)
-        {
+    for (int i = 0; i < MaxLength; ++i) {
+        for (int j = 0; j < MaxLength; ++j) {
             int &x = dict[i][j];
-            if (i > 0 && dict[i-1][j] < x)
-                x = dict[i-1][j];
-            if (j > 0 && dict[i][j-1] < x)
-                x = dict[i][j-1];
+            if (i > 0 && dict[i - 1][j] < x)
+                x = dict[i - 1][j];
+            if (j > 0 && dict[i][j - 1] < x)
+                x = dict[i][j - 1];
         }
     }
 
@@ -159,108 +150,100 @@ PackingState PackingUtility::MentoCarlo(int level, int iterations, int stage)
     int numAttempt = 1;
     int numRun = 25;
     InitState(best);
-    for (int attempt = 0; attempt < numAttempt; ++attempt) { 
-      PackingState state;
-      InitState(state);
+    for (int attempt = 0; attempt < numAttempt; ++attempt) {
+        PackingState state;
+        InitState(state);
 
-       vector<unordered_map<const Block *, double>> policy(blockTableLen);
+        vector<unordered_map<const Block *, double>> policy(blockTableLen);
         for (int i = 0; i < blockTableLen; ++i) {
-          for (int j = 0; j < blockTableLen; ++j) {
-              policy[i][blockTable[j]] = 1;
-          }      
+            for (int j = 0; j < blockTableLen; ++j) {
+                policy[i][blockTable[j]] = 1;
+            }
         }
 
-      while (!state.spaceStack.empty()) {
+        while (!state.spaceStack.empty()) {
 
-                const int *avail = state.avail;
-                int len = 0;
-                for (int i = 0; i < blockTableLen; ++i)
-                {
-                    Block *block = blockTable[i];
-                    if ((stage == 1 || block->type == SimpleBlock))
-                    {
-                        const int *require = block->require;
-                        const int *boxIndex = block->boxIndex;
-                        int boxLen = block->boxLen;
-
-                        bool flag = true;
-                        for (int j = 0; j < boxLen; ++j)
-                        {
-                            const int &k = boxIndex[j];
-                            if (require[k] > avail[k])
-                            {
-                                flag = false;
-                                break;
-                            }
-                        }
-
-                        if (flag)
-                            blockTable[len++] = block;
-                    }
-                }
-                blockTableLen = len;
-
-                fill_n(&dict[0][0], MaxLength*MaxLength, MaxNum);
-
-                len = 0;
-                for (int i = 0; i < boxListLen; ++i)
-                {
-                    Box *box = boxList[i];
-                    if (avail[box->type])
-                    {
-                        boxList[len++] = box;
-                        if (box->lx < dict[box->ly][box->lz])
-                            dict[box->ly][box->lz] = box->lx;
-                    }
-                }
-                boxListLen = len;
-
-                for (int i = 0; i < MaxLength; ++i)
-                {
-                    for (int j = 0; j < MaxLength; ++j)
-                    {
-                        int &x = dict[i][j];
-                        if (i > 0 && dict[i-1][j] < x)
-                            x = dict[i-1][j];
-                        if (j > 0 && dict[i][j-1] < x)
-                            x = dict[i][j-1];
-                    }
-                }
-
-        Block *blockList[MaxBlockList];
-        int blockListLen = 0;
-
-        GenBlockList(state, 64, blockList, blockListLen);
-
-        if (blockListLen > 0) {
-          PackingState bestNext;
-          InitState(bestNext);
-          for (int i = 0; i < blockTableLen; ++i) {
-              //policy[i].clear();
-            }
-          for (int run = 0; run < numRun; ++run) {
+            const int *avail = state.avail;
+            int len = 0;
             for (int i = 0; i < blockTableLen; ++i) {
-              //policy[i].clear();
-            }
-            PackingState next = MentoCarloSearch(level, iterations, policy, state);
-            if (next.volume > bestNext.volume) {
-              bestNext = next;
-            }
-          }
-          //cerr << next.plan.size() << " " << state.plan.size() << endl;
-          Placement placement = bestNext.plan[state.plan.size()];
+                Block *block = blockTable[i];
+                if ((stage == 1 || block->type == SimpleBlock)) {
+                    const int *require = block->require;
+                    const int *boxIndex = block->boxIndex;
+                    int boxLen = block->boxLen;
 
-          Space space;
-          UpdateState(state, placement.block, space);
-        }
-        else {
-          Space space;
-          UpdateState(state, NULL, space);
-        }
-      }
+                    bool flag = true;
+                    for (int j = 0; j < boxLen; ++j) {
+                        const int &k = boxIndex[j];
+                        if (require[k] > avail[k]) {
+                            flag = false;
+                            break;
+                        }
+                    }
 
-      if (state.volume > best.volume) 
-        best = state;
+                    if (flag)
+                        blockTable[len++] = block;
+                }
+            }
+            blockTableLen = len;
+
+            fill_n(&dict[0][0], MaxLength * MaxLength, MaxNum);
+
+            len = 0;
+            for (int i = 0; i < boxListLen; ++i) {
+                Box *box = boxList[i];
+                if (avail[box->type]) {
+                    boxList[len++] = box;
+                    if (box->lx < dict[box->ly][box->lz])
+                        dict[box->ly][box->lz] = box->lx;
+                }
+            }
+            boxListLen = len;
+
+            for (int i = 0; i < MaxLength; ++i) {
+                for (int j = 0; j < MaxLength; ++j) {
+                    int &x = dict[i][j];
+                    if (i > 0 && dict[i - 1][j] < x)
+                        x = dict[i - 1][j];
+                    if (j > 0 && dict[i][j - 1] < x)
+                        x = dict[i][j - 1];
+                }
+            }
+
+            Block *blockList[MaxBlockList];
+            int blockListLen = 0;
+
+            GenBlockList(state, 64, blockList, blockListLen);
+
+            if (blockListLen > 0) {
+                PackingState bestNext;
+                InitState(bestNext);
+                for (int i = 0; i < blockTableLen; ++i) {
+                    //policy[i].clear();
+                }
+                for (int run = 0; run < numRun; ++run) {
+                    for (int i = 0; i < blockTableLen; ++i) {
+                        //policy[i].clear();
+                    }
+                    PackingState next = MentoCarloSearch(level, iterations, policy, state);
+                    if (next.volume > bestNext.volume) {
+                        bestNext = next;
+                    }
+                }
+                //cerr << next.plan.size() << " " << state.plan.size() << endl;
+                Placement placement = bestNext.plan[state.plan.size()];
+
+                Space space;
+                UpdateState(state, placement.block, space);
+            }
+            else {
+                Space space;
+                UpdateState(state, NULL, space);
+            }
+        }
+
+        if (state.volume > best.volume)
+            best = state;
     }
 
     GenSolution(best, solution);

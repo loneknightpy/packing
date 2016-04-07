@@ -11,10 +11,8 @@ using namespace std;
 
 int reachEffort;
 
-PackingState *PackingUtility::NewPackingState()
-{
-    if (packingStateStackLen == 0)
-    {
+PackingState *PackingUtility::NewPackingState() {
+    if (packingStateStackLen == 0) {
         Log(LogError, "packing state stack overflow\n");
         exit(1);
     }
@@ -22,19 +20,15 @@ PackingState *PackingUtility::NewPackingState()
     return packingStateStack[--packingStateStackLen];
 }
 
-void PackingUtility::FreePackingState(PackingState *state)
-{
+void PackingUtility::FreePackingState(PackingState *state) {
     packingStateStack[packingStateStackLen++] = state;
 }
 
-void PackingUtility::PushPackingState(int depth, PackingState &state)
-{
+void PackingUtility::PushPackingState(int depth, PackingState &state) {
     vector<PackingState *> &heap = phaseHeaps[depth];
     if (heap.size() < HeapSize
-        || state.volumeCompelete > heap[0]->volumeCompelete)
-    {
-        for (int i = 0; i < heap.size(); ++i)
-        {
+        || state.volumeCompelete > heap[0]->volumeCompelete) {
+        for (int i = 0; i < heap.size(); ++i) {
             if (state.code == heap[i]->code)
                 return;
         }
@@ -42,12 +36,10 @@ void PackingUtility::PushPackingState(int depth, PackingState &state)
         PackingState *temp = NewPackingState();
         *temp = state;
 
-        if (heap.size() < HeapSize)
-        {
+        if (heap.size() < HeapSize) {
             heap.push_back(NULL);
         }
-        else
-        {
+        else {
             pop_heap(heap.begin(), heap.end(), PackingState::Compare);
             FreePackingState(heap.back());
             heap.back() = NULL;
@@ -58,8 +50,7 @@ void PackingUtility::PushPackingState(int depth, PackingState &state)
     }
 }
 
-void PackingUtility::InitPhaseUnit(PhaseUnit &phase, PackingState &state, Block *block, int effort)
-{
+void PackingUtility::InitPhaseUnit(PhaseUnit &phase, PackingState &state, Block *block, int effort) {
     phase.block = block;
     phase.depth = 0;
     phase.effort = effort;
@@ -70,10 +61,8 @@ void PackingUtility::InitPhaseUnit(PhaseUnit &phase, PackingState &state, Block 
     state.code = 0;
     phase.heaps.swap(phaseHeaps);
 
-    for (int i = 0; i < phaseHeaps.size(); ++i)
-    {
-        for (int j = 0; j < phaseHeaps[i].size(); ++j)
-        {
+    for (int i = 0; i < phaseHeaps.size(); ++i) {
+        for (int j = 0; j < phaseHeaps[i].size(); ++j) {
             FreePackingState(phaseHeaps[i][j]);
         }
         phaseHeaps[i].resize(0);
@@ -88,25 +77,20 @@ void PackingUtility::InitPhaseUnit(PhaseUnit &phase, PackingState &state, Block 
     RestoreState(state, block, space);
 }
 
-void PackingUtility::PhaseSearch(PhaseUnit &phase)
-{
+void PackingUtility::PhaseSearch(PhaseUnit &phase) {
     phase.heaps.swap(phaseHeaps);
 
     int depth = phase.depth;
     int effort = phase.effort;
-    for (int i = 0; i < phaseHeaps[depth].size(); ++i)
-    {
+    for (int i = 0; i < phaseHeaps[depth].size(); ++i) {
         PackingState &state = *phaseHeaps[depth][i];
-        for (int d = 1; d <= MaxPhaseDepth; ++d)
-        {
+        for (int d = 1; d <= MaxPhaseDepth; ++d) {
             ExtendSolution(state, depth + d, depth, branches[d][effort]);
         }
     }
 
-    for (int i = depth + 1; i <= depth + MaxPhaseDepth; ++i)
-    {
-        for (int j = 0; j < phaseHeaps[i].size(); ++j)
-        {
+    for (int i = depth + 1; i <= depth + MaxPhaseDepth; ++i) {
+        for (int j = 0; j < phaseHeaps[i].size(); ++j) {
             if (phaseHeaps[i][j]->volumeCompelete > phase.bestVolume)
                 phase.bestVolume = phaseHeaps[i][j]->volumeCompelete;
         }
@@ -116,31 +100,25 @@ void PackingUtility::PhaseSearch(PhaseUnit &phase)
     phase.heaps.swap(phaseHeaps);
 }
 
-int PackingUtility::MultiPhaseSearch(PackingState &state, Block *block, int adds, int effort)
-{
+int PackingUtility::MultiPhaseSearch(PackingState &state, Block *block, int adds, int effort) {
     Space space;
     UpdateState(state, block, space);
     state.code = 0;
 
-    for (int i = 0; i < MaxDepth; ++i)
-    {
-        for (int j = 0; j < phaseHeaps[i].size(); ++j)
-        {
+    for (int i = 0; i < MaxDepth; ++i) {
+        for (int j = 0; j < phaseHeaps[i].size(); ++j) {
             FreePackingState(phaseHeaps[i][j]);
         }
         phaseHeaps[i].resize(0);
     }
     ExtendSolution(state, 0, 0, 0);
 
-    for (int i = 0; i < adds; ++i)
-    {
-        for (int j = 0; j < phaseHeaps[i].size(); ++j)
-        {
-            for (int d = 1; d <= MaxPhaseDepth; ++d)
-            {
+    for (int i = 0; i < adds; ++i) {
+        for (int j = 0; j < phaseHeaps[i].size(); ++j) {
+            for (int d = 1; d <= MaxPhaseDepth; ++d) {
                 int noBranch = branches[d][effort];
 
-                ExtendSolution(*phaseHeaps[i][j], i+d, i, noBranch);
+                ExtendSolution(*phaseHeaps[i][j], i + d, i, noBranch);
             }
         }
     }
@@ -148,10 +126,8 @@ int PackingUtility::MultiPhaseSearch(PackingState &state, Block *block, int adds
     RestoreState(state, block, space);
 
     int bestVolume = 0;
-    for (int i = 0; i < MaxDepth; ++i)
-    {
-        for (int j = 0; j < phaseHeaps[i].size(); ++j)
-        {
+    for (int i = 0; i < MaxDepth; ++i) {
+        for (int j = 0; j < phaseHeaps[i].size(); ++j) {
             if (phaseHeaps[i][j]->volumeCompelete > bestVolume)
                 bestVolume = phaseHeaps[i][j]->volumeCompelete;
         }
@@ -160,24 +136,21 @@ int PackingUtility::MultiPhaseSearch(PackingState &state, Block *block, int adds
     return bestVolume;
 }
 
-const Block *PackingUtility::FindNextBlock(PackingState &state)
-{
+const Block *PackingUtility::FindNextBlock(PackingState &state) {
     Block *blockList[MaxBlockList];
     int blockListLen = 0;
     GenBlockList(state, MaxCandidate, blockList, blockListLen);
 
     if (blockListLen == 0)
         return NULL;
-    else
-    {
+    else {
 //         return blockList[blockListLen-1]; // test
 
         state.volumeCompelete = state.volume;
 //         return blockList[0];
 
         phasesLen = blockListLen;
-        for (int i = 0; i < phasesLen; ++i)
-        {
+        for (int i = 0; i < phasesLen; ++i) {
             phases[i] = &phasesAux[i];
             InitPhaseUnit(*phases[i], state, blockList[i], searchEffort);
         }
@@ -185,8 +158,7 @@ const Block *PackingUtility::FindNextBlock(PackingState &state)
         //return phases[0]->block;
 
         int size = MaxCandidate;
-        for (int i = 1; i <= totalAdd; ++i)
-        {
+        for (int i = 1; i <= totalAdd; ++i) {
             size >>= 1;
             if (size < MinCandidate)
                 size = MinCandidate;
@@ -204,8 +176,7 @@ const Block *PackingUtility::FindNextBlock(PackingState &state)
     }
 }
 
-PackingState PackingUtility::TreeSearch(int stage)
-{
+PackingState PackingUtility::TreeSearch(int stage) {
     best.volume = 0;
     {
         totalAdd = 2;
@@ -218,8 +189,7 @@ PackingState PackingUtility::TreeSearch(int stage)
             timeLimit = TimeLimitStage1;
 
         double start = clock();
-        while (true)
-        {
+        while (true) {
             totalAdd += 1;
             searchEffort *= EffortFact;
 
@@ -234,25 +204,20 @@ PackingState PackingUtility::TreeSearch(int stage)
             index = 0;
             InitState(current);
 
-            while (!current.spaceStack.empty())
-            {
+            while (!current.spaceStack.empty()) {
                 const int *avail = current.avail;
                 int len = 0;
-                for (int i = 0; i < blockTableLen; ++i)
-                {
+                for (int i = 0; i < blockTableLen; ++i) {
                     Block *block = blockTable[i];
-                    if ((stage == 1 || block->type == SimpleBlock))
-                    {
+                    if ((stage == 1 || block->type == SimpleBlock)) {
                         const int *require = block->require;
                         const int *boxIndex = block->boxIndex;
                         int boxLen = block->boxLen;
 
                         bool flag = true;
-                        for (int j = 0; j < boxLen; ++j)
-                        {
+                        for (int j = 0; j < boxLen; ++j) {
                             const int &k = boxIndex[j];
-                            if (require[k] > avail[k])
-                            {
+                            if (require[k] > avail[k]) {
                                 flag = false;
                                 break;
                             }
@@ -264,14 +229,12 @@ PackingState PackingUtility::TreeSearch(int stage)
                 }
                 blockTableLen = len;
 
-                fill_n(&dict[0][0], MaxLength*MaxLength, MaxNum);
+                fill_n(&dict[0][0], MaxLength * MaxLength, MaxNum);
 
                 len = 0;
-                for (int i = 0; i < boxListLen; ++i)
-                {
+                for (int i = 0; i < boxListLen; ++i) {
                     Box *box = boxList[i];
-                    if (avail[box->type])
-                    {
+                    if (avail[box->type]) {
                         boxList[len++] = box;
                         if (box->lx < dict[box->ly][box->lz])
                             dict[box->ly][box->lz] = box->lx;
@@ -279,15 +242,13 @@ PackingState PackingUtility::TreeSearch(int stage)
                 }
                 boxListLen = len;
 
-                for (int i = 0; i < MaxLength; ++i)
-                {
-                    for (int j = 0; j < MaxLength; ++j)
-                    {
+                for (int i = 0; i < MaxLength; ++i) {
+                    for (int j = 0; j < MaxLength; ++j) {
                         int &x = dict[i][j];
-                        if (i > 0 && dict[i-1][j] < x)
-                            x = dict[i-1][j];
-                        if (j > 0 && dict[i][j-1] < x)
-                            x = dict[i][j-1];
+                        if (i > 0 && dict[i - 1][j] < x)
+                            x = dict[i - 1][j];
+                        if (j > 0 && dict[i][j - 1] < x)
+                            x = dict[i][j - 1];
                     }
                 }
 
@@ -306,7 +267,7 @@ PackingState PackingUtility::TreeSearch(int stage)
                 costTime += (unsigned(~0));
             costTime /= CLOCKS_PER_SEC;
             Log(LogInfo, "stage%d effort %d rate: %.4f%% time: %.2fs\n", stage,
-                searchEffort, best.volume*100.0/problem->volume, costTime);
+                searchEffort, best.volume * 100.0 / problem->volume, costTime);
 
             if (searchEffort >= MaxEffort
                 || (costTime > timeLimit && searchEffort >= reachEffort))
