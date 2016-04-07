@@ -10,6 +10,18 @@
 
 using namespace std;
 
+struct CompareBlock {
+   unordered_map<const Block *, double> &_weight;
+
+
+  CompareBlock( unordered_map<const Block *, double> &weight): _weight(weight) {
+    //cerr << _weight.size() << endl;
+  }
+
+  bool operator () (const Block *a, const Block *b)  {
+    return _weight[a] > _weight[b];
+  }
+};
 
 void PackingUtility::Adapt(vector<unordered_map<const Block *, double>> &policy, PackingState &state, PackingState &best) {
   for (int i = state.plan.size(); i < best.plan.size(); ++i) {
@@ -27,11 +39,13 @@ void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &polic
         Block *blockList[MaxBlockList];
         int blockListLen = 0;
 
-        GenBlockList(state, numBlocks, blockList, blockListLen);
+        GenBlockList(state, MaxBlockList, blockList, blockListLen);
 
+      
         double total = 0;
-        vector<double> weight(blockListLen);
+        //vector<double> weight(blockListLen);
         unordered_map<const Block *, double> &current_policy = policy[0];
+        unordered_map<const Block *, double> weight;
         for (int i = 0; i < blockListLen; ++i) {
           //PackingState tempState = state;
           //Space space;
@@ -40,9 +54,16 @@ void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &polic
           if (current_policy.find(blockList[i]) == current_policy.end()) {
             current_policy[blockList[i]] = 1;
           }
-          weight[i] = current_policy[blockList[i]] * blockList[i]->volume * blockList[i]->volume;
+          weight[blockList[i]] = current_policy[blockList[i]] * blockList[i]->volume * blockList[i]->volume;
           //weight[i] = policy[blockList[i]] * tempState.volume * tempState.volume;
-          total += weight[i];
+          //total += weight[blockList[i]];
+        }
+
+
+        sort(blockList, blockList + blockListLen, CompareBlock(weight));
+        blockListLen = min(blockListLen, numBlocks);
+        for (int i = 0; i < blockListLen; ++i) {
+          total += weight[blockList[i]];
         }
 
         Space space;
@@ -55,8 +76,8 @@ void PackingUtility::Rollout(vector<unordered_map<const Block *, double>> &polic
           double p = 1.0 * rand() / RAND_MAX * total;
           int selected = 0;
           double sum = 0;
-          while (selected < blockListLen-1 && sum + weight[selected] < p) {
-            sum += weight[selected++];
+          while (selected < blockListLen-1 && sum + weight[blockList[selected]] < p) {
+            sum += weight[blockList[selected++]];
           }
 
           UpdateState(state, blockList[selected], space);
