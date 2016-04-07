@@ -597,35 +597,6 @@ void PackingUtility::CompleteSolution(PackingState &state) {
     }
 }
 
-void PackingUtility::SplitPartialState(PackingState &state, int index, PartialPackingState &partial) {
-    //vector<Placement> &plan = state.plan;
-    //int size = plan.size();
-    //Block **blocks = partial.blocks;
-    //int &len = partial.len;
-
-    //len = 0;
-    //for (int i = index; i < size; ++i)
-    //{
-    //    blocks[i] = const_cast<Block *>(plan[i].block);
-    //    if (blocks[i] != NULL)
-    //        ++len;
-    //}
-}
-
-void PackingUtility::MergePartialState(PackingState &state, PartialPackingState &partial) {
-    //Block **blocks = partial.blocks;
-    //int &len = partial.len;
-    //for (int i = 0; i < len; ++i)
-    //{
-    //    Block *block = blocks[i];
-    //    Space space = state.spaceStack.back();
-    //
-    //    while (block->lx > space.lx || block->ly > space.ly || block->lz > space.lz)
-    //        UpdateState(state, NULL, space);
-    //    UpdateState(state, block, space);
-    //}
-}
-
 void PackingUtility::GenSolution(PackingState &state, PackingSolution &solution) {
     solution.len = 0;
     for (int i = 0; i < state.plan.size(); ++i) {

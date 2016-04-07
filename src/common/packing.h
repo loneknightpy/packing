@@ -53,13 +53,6 @@ struct PackingState {
     }
 };
 
-struct PartialPackingState {
-    Block *blocks[MaxDepth];
-    int len;
-    int volumeCompelete;
-    unsigned long long code;
-};
-
 struct PackingSequence {
     int index[MaxPlan];
     int len;
@@ -141,8 +134,6 @@ struct PackingUtility {
 
     void SetPackingProblem(const PackingProblem *problem) { this->problem = problem; }
 
-    const PackingProblem *GetPackingProblem() const { return this->problem; }
-
     void GenBlockList(PackingState &state, int noBranch,
                       Block *block[], int &blockListLen);
 
@@ -157,10 +148,6 @@ struct PackingUtility {
     void ExtendSolution(PackingState &state, int maxAdd, int add, int noBranch);
 
     void CompleteSolution(PackingState &state);
-
-    void SplitPartialState(PackingState &state, int index, PartialPackingState &partial);
-
-    void MergePartialState(PackingState &state, PartialPackingState &partial);
 
     void GenSolution(PackingState &state, PackingSolution &solution);
 
@@ -177,13 +164,7 @@ struct PackingUtility {
 
     void PhaseSearch(PhaseUnit &phase);
 
-    int MultiPhaseSearch(PackingState &state, Block *block, int adds, int effort);
-
     const Block *FindNextBlock(PackingState &state);
-
-    void UpdateBlockTable();
-
-    void UpdateBoxList();
 
     PackingState TreeSearch(int stage);
 

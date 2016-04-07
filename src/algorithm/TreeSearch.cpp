@@ -100,42 +100,6 @@ void PackingUtility::PhaseSearch(PhaseUnit &phase) {
     phase.heaps.swap(phaseHeaps);
 }
 
-int PackingUtility::MultiPhaseSearch(PackingState &state, Block *block, int adds, int effort) {
-    Space space;
-    UpdateState(state, block, space);
-    state.code = 0;
-
-    for (int i = 0; i < MaxDepth; ++i) {
-        for (int j = 0; j < phaseHeaps[i].size(); ++j) {
-            FreePackingState(phaseHeaps[i][j]);
-        }
-        phaseHeaps[i].resize(0);
-    }
-    ExtendSolution(state, 0, 0, 0);
-
-    for (int i = 0; i < adds; ++i) {
-        for (int j = 0; j < phaseHeaps[i].size(); ++j) {
-            for (int d = 1; d <= MaxPhaseDepth; ++d) {
-                int noBranch = branches[d][effort];
-
-                ExtendSolution(*phaseHeaps[i][j], i + d, i, noBranch);
-            }
-        }
-    }
-
-    RestoreState(state, block, space);
-
-    int bestVolume = 0;
-    for (int i = 0; i < MaxDepth; ++i) {
-        for (int j = 0; j < phaseHeaps[i].size(); ++j) {
-            if (phaseHeaps[i][j]->volumeCompelete > bestVolume)
-                bestVolume = phaseHeaps[i][j]->volumeCompelete;
-        }
-    }
-
-    return bestVolume;
-}
-
 const Block *PackingUtility::FindNextBlock(PackingState &state) {
     Block *blockList[MaxBlockList];
     int blockListLen = 0;
